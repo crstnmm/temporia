@@ -30,10 +30,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import ToastContainer from '@/components/ToastContainer.vue'
 
+
+const activeView = ref('all')
+
+function setView(view) {
+  activeView.value = view
+}
 const auth        = useAuthStore()
 const initializing = ref(true)
 

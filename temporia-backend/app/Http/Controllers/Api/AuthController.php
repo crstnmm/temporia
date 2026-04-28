@@ -15,14 +15,18 @@ class AuthController extends Controller
     {
         $validated = $request->validate([
             'name'     => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\pL\s\-]+$/u'],
-            'email'    => ['required', 'email:rfc,dns', 'max:254', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
+           'email' => ['required', 'email', 'max:254', 'unique:users,email'],
+           'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()],
         ]);
 
         // Normalize email before storage — prevents duplicate accounts via case variation
         $validated['email'] = mb_strtolower(trim($validated['email']));
 
-        $user  = User::create($validated);
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+         'password' => Hash::make($validated['password']), // 🔥 FIX
+        ]);
         $token = $user->createToken('temporia-app', ['*'], now()->addDays(30))->plainTextToken;
 
         return response()->json([

@@ -73,6 +73,23 @@
             </span>
 
             <!-- Dot indicators -->
+            <!-- Notes preview -->
+<div class="text-[10px] mt-1 w-full px-1 space-y-0.5 pointer-events-none">
+ <div
+    v-for="note in getNotes(cell.date).slice(0, 2)"
+    :key="note.id"
+    class="text-amber-600 text-[10px] leading-tight text-center break-words"
+  >
+    {{ note.note || note.title || note.content || note.text }}
+  </div>
+
+  <div
+    v-if="getNotes(cell.date).length > 2"
+    class="text-[9px] text-slate-400 text-center"
+  >
+    +{{ getNotes(cell.date).length - 2 }} more
+  </div>
+</div>
             <div class="flex items-center gap-0.5 mt-1 h-2">
               <span
                 v-if="dotFlags(cell.date).hasDiary"
@@ -117,6 +134,7 @@ const props = defineProps({
   selectedDate: { type: String,  default: null  },
   loading:      { type: Boolean, default: false },
   dotFlags:     { type: Function, required: true },
+  notes: { type: Array, default: () => [] },
 })
 
 defineEmits(['prev', 'next', 'select'])
@@ -138,6 +156,18 @@ function dayNumberClass(cell) {
   const dow = new Date(cell.date + 'T00:00:00').getDay()
   return dow === 0 || dow === 6 ? 'text-slate-400' : 'text-slate-700'
 }
+
+import { useCalendarStore } from '@/stores/calendar'
+
+const store = useCalendarStore()
+
+function getNotes(date) {
+  return props.notes.filter(n => {
+    const noteDate = (n.note_date || '').split('T')[0]
+    return noteDate === date
+  })
+}
+
 </script>
 
 <style scoped>
@@ -152,5 +182,10 @@ function dayNumberClass(cell) {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+.truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 </style>

@@ -129,53 +129,7 @@
               </div>
 
               <!-- ALERTS TAB -->
-              <div v-else-if="activeTab === 'alerts'" key="alerts" class="space-y-3">
-                <button
-                  @click="showAlertForm = !showAlertForm"
-                  class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl border-2 border-dashed border-slate-200 text-sm text-slate-400 hover:border-rose-300 hover:text-rose-500 transition-all duration-200"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Set a Temporia alert
-                </button>
-
-                <Transition name="expand">
-                  <form v-if="showAlertForm" @submit.prevent="submitAlert" class="bg-slate-50 rounded-2xl p-4 space-y-3">
-                    <input v-model="alertForm.title" class="input text-sm" placeholder="Alert title" maxlength="255" required />
-                    <input v-model="alertForm.alert_time" type="time" class="input text-sm" />
-                    <select v-model="alertForm.priority" class="input text-sm">
-                      <option value="low">🟢 Low priority</option>
-                      <option value="medium">🟡 Medium priority</option>
-                      <option value="high">🔴 High priority</option>
-                    </select>
-                    <textarea v-model="alertForm.description" class="input text-sm resize-none" rows="2" placeholder="Optional description…" maxlength="2000"></textarea>
-                    <div class="flex gap-2">
-                      <button type="submit" class="btn-primary text-sm" :disabled="busy['create-alert']">
-                        <svg v-if="busy['create-alert']" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                        </svg>
-                        {{ busy['create-alert'] ? 'Saving…' : 'Save alert' }}
-                      </button>
-                      <button type="button" @click="showAlertForm = false" class="btn-secondary text-sm">Cancel</button>
-                    </div>
-                  </form>
-                </Transition>
-
-                <AlertItem
-                  v-for="alert in alerts" :key="alert.id" :alert="alert"
-                  :updating="!!busy[`update-alert-${alert.id}`]"
-                  :deleting="!!busy[`delete-alert-${alert.id}`]"
-                  @update="(data) => $emit('update-alert', { id: alert.id, data })"
-                  @delete="$emit('delete-alert', alert.id)"
-                />
-
-                <div v-if="!alerts.length && !showAlertForm" class="text-center py-8">
-                  <p class="text-3xl mb-2">🔔</p>
-                  <p class="text-sm text-slate-400">No Temporia alerts set for this day</p>
-                </div>
-              </div>
+              
 
             </Transition>
           </div>
@@ -188,13 +142,11 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import NoteItem from './NoteItem.vue'
-import AlertItem from './AlertItem.vue'
 import DiaryEntryPanel from './DiaryEntryPanel.vue'
 
 const TABS = [
   { key: 'diary',  label: 'Diary',  icon: '📖' },
   { key: 'notes',  label: 'Notes',  icon: '📝' },
-  { key: 'alerts', label: 'Alerts', icon: '🔔' },
 ]
 
 const NOTE_COLORS = [
@@ -209,23 +161,23 @@ const props = defineProps({
   date:   { type: String,   default: null  },
   entry:  { type: Object,   default: null  },
   notes:  { type: Array,    default: () => [] },
-  alerts: { type: Array,    default: () => [] },
   busy:   { type: Object,   default: () => ({}) },
+  initialTab: { type: String, default: 'diary' }
+
 })
 
 const emit = defineEmits([
   'close',
   'create-entry', 'update-entry', 'delete-entry',
   'save-note', 'update-note', 'delete-note',
-  'save-alert', 'update-alert', 'delete-alert',
 ])
 
-const activeTab     = ref('diary')
+
+
+const activeTab = ref(props.initialTab)
 const showNoteForm  = ref(false)
-const showAlertForm = ref(false)
 
 const noteForm  = reactive({ title: '', body: '', color: 'indigo' })
-const alertForm = reactive({ title: '', alert_time: '', priority: 'medium', description: '' })
 
 const formattedDate = computed(() => {
   if (!props.date) return ''
@@ -242,7 +194,6 @@ const weekday = computed(() => {
 function badgeCount(tab) {
   if (tab === 'diary')  return props.entry ? 1 : 0
   if (tab === 'notes')  return props.notes.length
-  if (tab === 'alerts') return props.alerts.length
   return 0
 }
 
@@ -250,26 +201,23 @@ watch(() => props.open, (val) => {
   if (val) {
     activeTab.value     = 'diary'
     showNoteForm.value  = false
-    showAlertForm.value = false
   }
 })
 
+watch(() => props.initialTab, (val) => {
+  if (val) activeTab.value = val
+})
+
 async function submitNote() {
+  console.log('SENDING DATE:', props.date)
   await emit('save-note', { ...noteForm, note_date: props.date })
   noteForm.title = ''
   noteForm.body  = ''
   noteForm.color = 'indigo'
   showNoteForm.value = false
+  console.log('SENDING NOTE DATE:', props.date)
 }
 
-async function submitAlert() {
-  await emit('save-alert', { ...alertForm, alert_date: props.date })
-  alertForm.title       = ''
-  alertForm.alert_time  = ''
-  alertForm.priority    = 'medium'
-  alertForm.description = ''
-  showAlertForm.value = false
-}
 </script>
 
 <style scoped>

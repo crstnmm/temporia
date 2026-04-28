@@ -141,7 +141,7 @@
         <button v-if="entry && editing" type="button" @click="cancelEdit" class="btn-secondary">
           Cancel
         </button>
-      </div>
+      </div> 
     </form>
 
   </div>

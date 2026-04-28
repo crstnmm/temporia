@@ -208,15 +208,26 @@ export const useCalendarStore = defineStore('calendar', () => {
   }
 
   // ── Selectors ────────────────────────────────────────
-  function entryForDate(date)  { return entries.value.find((e) => e.date === date) || null }
-  function notesForDate(date)  { return notes.value.filter((n) => n.note_date === date) }
-  function alertsForDate(date) { return alerts.value.filter((a) => a.alert_date === date) }
+function entryForDate(date) {
+  return entries.value.find((e) => {
+    const entryDate = (e.date || e.created_at || '').split('T')[0]
+    return entryDate === date
+  }) || null
+} function notesForDate(date) {
+  return notes.value.filter((n) => {
+    const noteDate = (n.note_date || '').split('T')[0]
+    return noteDate === date
+  })
+}function alertsForDate(date) { return alerts.value.filter((a) => a.alert_date === date) }
 
   function dotFlags(date) {
     return {
       hasDiary:   entries.value.some((e) => e.date === date),
-      noteCount:  notes.value.filter((n) => n.note_date === date).length,
-      alertCount: alerts.value.filter((a) => a.alert_date === date).length,
+      noteCount: notes.value.filter((n) => {
+  const noteDate = (n.note_date || '').split('T')[0]
+  return noteDate === date
+}).length,
+    alertCount: alerts.value.filter((a) => a.alert_date === date).length,
     }
   }
 

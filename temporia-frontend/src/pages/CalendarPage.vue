@@ -44,12 +44,18 @@
     <main class="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
       <!-- Month stats -->
-      <div class="grid grid-cols-3 gap-3">
-        <div
-          v-for="stat in stats"
-          :key="stat.label"
-          class="bg-white rounded-2xl border border-slate-100 px-4 py-3 flex items-center gap-3 shadow-sm"
-        >
+      <div class="grid grid-cols-2 gap-3">
+            <div
+  v-for="stat in stats"
+  :key="stat.label"
+  @click="handleStatClick(stat.label)"
+  :class="[
+    'bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm cursor-pointer transition',
+    activeView === stat.label.toLowerCase()
+      ? 'ring-2 ring-purple-500'
+      : 'hover:scale-105'
+  ]"
+>
           <span class="text-xl">{{ stat.icon }}</span>
           <div>
             <Transition name="count" mode="out-in">
@@ -61,17 +67,18 @@
       </div>
 
       <!-- Calendar -->
-      <CalendarGrid
-        :days="days"
-        :month-label="monthLabel"
-        :today-str="todayStr"
-        :selected-date="store.selectedDate"
-        :loading="store.loading"
-        :dot-flags="store.dotFlags"
-        @prev="handlePrev"
-        @next="handleNext"
-        @select="handleSelectDate"
-      />
+  <CalendarGrid
+  :days="days"
+  :month-label="monthLabel"
+  :today-str="todayStr"
+  :selected-date="store.selectedDate"
+  :loading="store.loading"
+  :dot-flags="store.dotFlags"
+  :notes="store.notes"  
+  @prev="handlePrev"
+  @next="handleNext"
+  @select="handleSelectDate"
+/>
 
       <!-- Today shortcut -->
       <div class="flex justify-center">
@@ -96,6 +103,7 @@
       :notes="selectedNotes"
       :alerts="selectedAlerts"
       :busy="store.busy"
+      :initial-tab="store.activeTab"
       @close="store.closeModal"
       @create-entry="(d)        => store.createEntry(d)"
       @update-entry="({ id, data }) => store.updateEntry(id, data)"
@@ -137,7 +145,6 @@ const selectedAlerts = computed(() => store.alertsForDate(store.selectedDate))
 const stats = computed(() => [
   { icon: '📖', count: store.entries.length, label: 'Diary entries' },
   { icon: '📝', count: store.notes.length,   label: 'Notes'         },
-  { icon: '🔔', count: store.alerts.length,  label: 'Alerts'        },
 ])
 
 // ── Cache-aware month fetch — no redundant API calls ──
@@ -162,9 +169,9 @@ function handleNext() {
 }
 
 function handleSelectDate(date) {
-  store.openDate(date)
+  store.selectedDate = date
+  store.modalOpen = true
 }
-
 async function handleLogout() {
   loggingOut.value = true
   try {
@@ -175,6 +182,23 @@ async function handleLogout() {
   } finally {
     loggingOut.value = false
   }
+}
+const activeView = ref('all')
+
+function setView(label) {
+  activeView.value = label.toLowerCase()
+}
+function handleStatClick(label) {
+  const today = todayStr
+
+  // set selected date (you can change this later if needed)
+  store.selectedDate = today
+
+  // open modal
+  store.modalOpen = true
+
+  // set which tab to open
+  store.activeTab = label.toLowerCase()
 }
 </script>
 
