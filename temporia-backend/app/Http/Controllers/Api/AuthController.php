@@ -27,11 +27,10 @@ class AuthController extends Controller
             'email' => $validated['email'],
          'password' => Hash::make($validated['password']), // 🔥 FIX
         ]);
-        $token = $user->createToken('temporia-app', ['*'], now()->addDays(30))->plainTextToken;
+        // $token = $user->createToken('temporia-app', ['*'], now()->addDays(30))->plainTextToken;
 
         return response()->json([
-            'user'  => $user->only(['id', 'name', 'email', 'created_at']),
-            'token' => $token,
+        'user' => $user,
         ], 201);
     }
 
