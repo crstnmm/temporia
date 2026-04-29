@@ -12,8 +12,10 @@ return [
     'allowed_methods' => ['*'],
 
   'allowed_origins' => [
+    'https://temporia-yourdiarycalendar.vercel.app',
+    'https://temporia-yourdiarycalendar-git-main-crstnmms-projects.vercel.app',
     'http://localhost:5173',
-    'http://localhost:4173'
+    'http://localhost:4173',
 ],
     'allowed_origins_patterns' => [],
 

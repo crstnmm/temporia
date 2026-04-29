@@ -18,7 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        /**
+        $middleware->use([
+        \Illuminate\Http\Middleware\HandleCors::class,
+        ]);    
+    /**
          * Security headers on every response (web + API).
          * Includes CSP, X-Frame-Options, X-XSS-Protection, X-Content-Type-Options,
          * Referrer-Policy, Permissions-Policy, and server header removal.
